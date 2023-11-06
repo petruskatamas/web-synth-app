@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-          <div className=" bg-gray-400 w-screen h-fit md:h-screen flex flex-row justify-center items-center">
+          <div className=" bg-gray-400 w-full h-fit md:h-screen flex flex-row justify-center items-center">
             {children}
           </div>
         </body>

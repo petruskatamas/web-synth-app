@@ -59,16 +59,16 @@ export default function Home() {
   
   return (
     <>
-      <div className=" flex flex-col h-full w-full p-8 justify-start md:flex-row md:justify-center items-center gap-12">
-        <div className="bg-white h-fit w-[90%] rounded p-5 pb-8 shadow-2xl flex flex-col border-slate-300 border-2 gap-4 relative">
+      <div className=" flex flex-col min-h-screen h-fit w-full p-8 justify-start md:flex-row md:justify-center items-center gap-12">
+        <div className="bg-white h-fit w-[90%] lg:w-2/4 rounded p-5 pb-8 shadow-2xl flex flex-col border-slate-300 border-2 gap-4 relative">
             <div className="w-full grid grid-cols-2 gap-6">
               <button
               onClick={handleStart}
-              className="w-full text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-800 hover:shadow-xl hover:rounded transition duration-300"
+              className="w-full text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-800 hover:rounded transition duration-300"
               >START</button>
               <button
               onClick={handleStop}
-              className="w-full text-white bg-red-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-red-800 hover:shadow-xl hover:rounded transition duration-300"
+              className="w-full text-white bg-red-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-red-800 hover:rounded transition duration-300"
               >STOP</button>
             </div>
             <div className="w-full flex flex-col gap-4 justify-center items-center">
@@ -133,7 +133,7 @@ export default function Home() {
                 </ul>
               <button 
               onClick={()=>setVisibility(!visibility)}
-              className="absolute bg-white border-slate-300 border-2 rounded p-2 shadow-2xl -bottom-6 text-sm font-semibold text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition duration-300">
+              className="absolute bg-white border-slate-300 border-2 rounded p-2 shadow-2xl -bottom-6 text-sm font-semibold text-gray-500 hover:text-gray-600 hover:bg-gray-200 transition duration-300">
                 {visibility ? "Hide description" : "Show description"}
               </button>
             </div>
