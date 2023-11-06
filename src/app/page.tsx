@@ -1,113 +1,159 @@
-import Image from 'next/image'
+"use client"
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
+
+  const [visibility, setVisibility] = useState(true)
+  
+  var AudioContext = window.AudioContext || window.AudioContext;
+  
+  const isPlaying = useRef(false)
+  const oscType = useRef("sine" as OscillatorType)
+  const [volumeNum,setVolumeNum] = useState(0.3)
+  const [audioContext,setAudioContext] = useState(null as unknown as AudioContext)
+  const [oscillator,setOscillator] = useState(null as unknown as OscillatorNode)
+  const [masterVol,setMasterVol] = useState(null as unknown as GainNode)
+
+  useEffect(()=>{
+    console.log(oscillator,audioContext,masterVol, oscType.current)
+    if(audioContext && !oscillator){
+      setOscillator(audioContext.createOscillator())
+    }else if(audioContext && oscillator && !masterVol){
+      setMasterVol(audioContext.createGain())
+      oscillator.type = oscType.current
+    }else if(audioContext && oscillator && masterVol){
+        masterVol.connect(audioContext.destination);
+        masterVol.gain.value = volumeNum
+        if(isPlaying.current === false){
+          isPlaying.current = true
+          oscillator.frequency.setValueAtTime(220, 0);
+          oscillator.connect(masterVol);
+          oscillator.start(0);
+      }
+    }
+  },[audioContext,oscillator,masterVol])
+  
+  
+  const handleStart = () => {
+    if(isPlaying.current === false){
+      isPlaying.current = false
+      setAudioContext(new AudioContext())
+    }
+  }
+  
+  const handleStop = () => {
+    if(isPlaying.current === true){
+      isPlaying.current = false
+      oscillator.stop(0)
+      setMasterVol(null as unknown as GainNode)
+      setOscillator(null as unknown as OscillatorNode)
+      setAudioContext(null as unknown as AudioContext)
+    }
+  }
+
+  const setOscType = (type:OscillatorType) => {
+    oscType.current = type
+    oscillator ? oscillator.type = oscType.current : null 
+  }
+  
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <>
+      <div className=" flex flex-col h-full w-full p-8 justify-start md:flex-row md:justify-center items-center gap-12">
+        <div className="bg-white h-fit w-[90%] rounded p-5 pb-8 shadow-2xl flex flex-col border-slate-300 border-2 gap-4 relative">
+            <div className="w-full grid grid-cols-2 gap-6">
+              <button
+              onClick={handleStart}
+              className="w-full text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-800 hover:shadow-xl hover:rounded transition duration-300"
+              >START</button>
+              <button
+              onClick={handleStop}
+              className="w-full text-white bg-red-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-red-800 hover:shadow-xl hover:rounded transition duration-300"
+              >STOP</button>
+            </div>
+            <div className="w-full flex flex-col gap-4 justify-center items-center">
+              <div className="w-full flex flex-col gap-2">
+                <div>
+                  <label className="text-lg text-gray-500 font-semibold">Volume: </label>
+                  <span className="text-lg text-gray-500 font-semibold">{volumeNum*100}%</span>
+                </div>
+                <input
+                onChange={(e) => {
+                  setVolumeNum((Number(e.target.value)))
+                  masterVol ? masterVol.gain.value = Number(e.target.value) : null
+                }}
+                className="w-full"
+                type="range" min="0" max="1" step="0.1" defaultValue={0.3}/>
+              </div>
+                <ul className="grid grid-cols-2 w-full gap-6 flex-row justify-between items-center">
+                    <li>
+                        <input 
+                        onChange={(e)=> setOscType((e.target.value as OscillatorType))}
+                        type="radio" id="sine-wave" name="wave" value="sine" className="hidden peer" defaultChecked/>
+                        <label htmlFor="sine-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
+                            <div className="flex flex-col gap-2">
+                              <div className="w-full text-lg font-semibold text-center">Sine</div>
+                              <Image className="flex justify-center items-center mx-auto" priority src="/Simple_sine_wave.svg" alt="square-wave" width={60} height={50}/>
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <input 
+                        onChange={(e)=> setOscType((e.target.value as OscillatorType))}
+                        type="radio" id="square-wave" name="wave" value="square" className="hidden peer"/>
+                        <label htmlFor="square-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
+                            <div className="flex flex-col gap-2">
+                              <div className="w-full text-lg font-semibold text-center">Square</div>
+                              <Image className="flex justify-center items-center mx-auto" src="/Square_wave.svg" alt="square-wave" width={60} height={50}/>
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <input 
+                        onChange={(e)=> setOscType((e.target.value as OscillatorType))}
+                        type="radio" id="triangle-wave" name="wave" value="triangle" className="hidden peer"/>
+                        <label htmlFor="triangle-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
+                            <div className="flex flex-col gap-2">
+                              <div className="w-full text-lg font-semibold text-center">Triangle</div>
+                              <Image className="flex justify-center items-center mx-auto" src="/Triangle_wave.svg" alt="triangle-wave" width={60} height={50}/>
+                            </div>
+                        </label>
+                    </li>
+                    <li>
+                        <input 
+                        onChange={(e)=> setOscType((e.target.value as OscillatorType))}
+                        type="radio" id="saw-wave" name="wave" value="sawtooth" className="hidden peer"/>
+                        <label htmlFor="saw-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
+                            <div className="flex flex-col gap-2">
+                              <div className="w-full text-lg font-semibold text-center">Sawtooth</div>
+                              <Image className="flex justify-center items-center mx-auto" src="/Sawtooth_wave.svg" alt="sawtooth-wave" width={60} height={50}/>
+                            </div>
+                        </label>
+                    </li>
+                </ul>
+              <button 
+              onClick={()=>setVisibility(!visibility)}
+              className="absolute bg-white border-slate-300 border-2 rounded p-2 shadow-2xl -bottom-6 text-sm font-semibold text-gray-500 hover:text-gray-600 hover:bg-gray-100 transition duration-300">
+                {visibility ? "Hide description" : "Show description"}
+              </button>
+            </div>
         </div>
+        {visibility && 
+          <div className="bg-white h-fit w-[90%] md:w-1/3 rounded p-5 shadow-2xl flex flex-col border-slate-300 border-2 gap-2 text-gray-500 text-sm">
+            <h1 className="font-bold">Single Sound Oscillator</h1>
+            <p>This module makes use of the Audio Web API to produce a singlie sound.</p>
+            <p>How to recreate this?</p>
+            <p> 
+              We initalize an <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">AudioContext</code> as our audio source in the browser.
+              We create an <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">oscilator</code> from our context
+              with a <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">type</code> property 
+              and connect it to the <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">masterVolume</code> - created from the same context.
+            </p>
+            <p>By definition, we have created the simplest synthesizer!</p>
+            <p>Learn more: <a className="text-cyan-700 underline" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Aduio API docs</a></p>
+          </div>
+        }
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore the Next.js 13 playground.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </>
   )
 }
