@@ -1,95 +1,41 @@
 "use client"
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
-// TODO : this works but needs refactoring because of
-//        state abuse and some parts need to be reusable
+export const AudioContext = window.AudioContext || window.AudioContext;
+
+export interface NoteInterface {
+    audioContext : AudioContext,
+
+    // TODO : make interface for playNote()
+
+}
+
+export const playNote = (audioContext : AudioContext) => {
+    const oscilator : OscillatorNode = audioContext.createOscillator()
+    const masterVol : GainNode = audioContext.createGain()
+    const noteGain : GainNode = audioContext.createGain()
+    const lfo : OscillatorNode = audioContext.createOscillator()
+    const lfoGain : GainNode = audioContext.createGain()
+    const delay : DelayNode = audioContext.createDelay()
+    const delayFeedback : GainNode = audioContext.createGain()
+    const delayGain : GainNode = audioContext.createGain() 
+}
 
 export default function Home() {
 
   const [visibility, setVisibility] = useState(false)
   
-  var AudioContext = window.AudioContext || window.AudioContext;
-
-  const [audioContext, setAudioContext] = useState(null as unknown as AudioContext)
-  const [oscillator, setOscillator] = useState(null as unknown as OscillatorNode)
   const oscType = useRef("sine" as OscillatorType)
-  const [masterVol, setMasterVol] = useState(null as unknown as GainNode)
   const [volumeNum, setVolumeNum] = useState(0.3)
-  const [noteGain, setNoteGain] = useState(null as unknown as GainNode)
   const [sustainLevel,setSustainLevel] = useState(0.8)
   const [attackTime, setAttackTime] = useState(0.3)
   const [releaseTime, setReleaseTime] = useState(0.3)
-  const [lfo, setLfo] = useState(null as unknown as OscillatorNode)
-  const [lfoGain, setLfoGain] = useState(null as unknown as GainNode)
   const [vibratoAmount, setVibratoAmount] = useState(0.3)
   const [vibratoSpeed, setVibratoSpeed] = useState(10) 
-  const [delay, setDelay] = useState(null as unknown as DelayNode)
-  const [feedback, setFeedback] = useState(null as unknown as GainNode)
-  const [delayAmountGain, setDelayAmountGain] = useState(null as unknown as GainNode)
   const [delayTime, setDelayTime] = useState(0)
   const [feedbackValue, setFeedbackValue] = useState(0)
   const [delayAmount, setDelayAmount] = useState(0)
-
-  useEffect(()=>{
-    if(audioContext && !oscillator){
-
-      setOscillator(audioContext.createOscillator())
-      setMasterVol(audioContext.createGain())
-      setNoteGain(audioContext.createGain())
-      setLfo(audioContext.createOscillator())
-      setLfoGain(audioContext.createGain())
-      setDelay(audioContext.createDelay())
-      setFeedback(audioContext.createGain())
-      setDelayAmountGain(audioContext.createGain())
-
-    }else if(audioContext && oscillator){
-
-      delayAmountGain.connect(delay)
-      delay.connect(feedback)
-      feedback.connect(delay)
-      delay.connect(masterVol)
-      delay.delayTime.value = delayTime;
-      delayAmountGain.gain.value = delayAmount;
-      feedback.gain.value = feedbackValue;
-
-      masterVol.connect(audioContext.destination);
-      masterVol.gain.value = volumeNum
-
-      noteGain.gain.setValueAtTime(0, 0);
-      noteGain.gain.linearRampToValueAtTime(sustainLevel, audioContext.currentTime + attackTime);
-      noteGain.gain.setValueAtTime(sustainLevel, audioContext.currentTime + 1 - releaseTime);
-      noteGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
-
-      lfo.frequency.setValueAtTime(vibratoSpeed, 0);
-      lfo.connect(lfoGain);
-      lfo.start(0);
-      lfo.stop(audioContext.currentTime + 1);
-      
-      lfoGain.gain.setValueAtTime(vibratoAmount, 0)
-      lfoGain.connect(oscillator.frequency)
-
-      oscillator.type = oscType.current
-      oscillator.frequency.setValueAtTime(220, 0);
-      oscillator.start(0);
-      oscillator.stop(audioContext.currentTime + 1);
-      oscillator.connect(noteGain);
-      noteGain.connect(masterVol)
-      noteGain.connect(delay)
-      
-      setLfo(null as unknown as OscillatorNode)
-      setLfoGain(null as unknown as GainNode)
-      setNoteGain(null as unknown as GainNode)
-      setMasterVol(null as unknown as GainNode)
-      setOscillator(null as unknown as OscillatorNode)
-      setDelay(null as unknown as DelayNode)
-      setFeedback(null as unknown as GainNode)
-      setDelayAmountGain(null as unknown as GainNode)
-      setAudioContext(null as unknown as AudioContext)
-    }
-  },[audioContext,oscillator])
-
- 
   
   return (
     <>
@@ -97,7 +43,9 @@ export default function Home() {
         <div className="bg-white h-fit w-[90%] lg:w-2/4 rounded p-5 pb-8 shadow-2xl flex flex-col border-slate-300 border-2 gap-4 relative">
             <div className="w-full flex items-center justify-center">
               <button
-              onClick={()=>setAudioContext(new AudioContext())}
+              onClick={()=>{
+                // TODO : make playNote()
+              }}
               className="w-fit text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-600 hover:rounded transition duration-300"
               >PLAY NOTE</button>
             </div>
