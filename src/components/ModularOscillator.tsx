@@ -1,40 +1,89 @@
 "use client"
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { MutableRefObject, useRef, useState } from "react";
 
 export const AudioContext = window.AudioContext || window.AudioContext;
 
 export interface NoteInterface {
-    audioContext : AudioContext,
-
-    // TODO : make interface for playNote()
-
+    delayTime : number,
+    delayAmount : number,
+    feedback : number,
+    volume : number,
+    sustainLevel : number,
+    attackTime: number,
+    releaseTime: number,
+    vibratoSpeed: number,
+    vibratoAmount: number,
+    oscillatorType: MutableRefObject<OscillatorType>,
 }
 
-export const playNote = (audioContext : AudioContext) => {
-    const oscilator : OscillatorNode = audioContext.createOscillator()
-    const masterVol : GainNode = audioContext.createGain()
-    const noteGain : GainNode = audioContext.createGain()
-    const lfo : OscillatorNode = audioContext.createOscillator()
-    const lfoGain : GainNode = audioContext.createGain()
-    const delay : DelayNode = audioContext.createDelay()
-    const delayFeedback : GainNode = audioContext.createGain()
-    const delayGain : GainNode = audioContext.createGain() 
+export const playNote = ({
+    delayTime,
+    delayAmount,
+    feedback,
+    volume,
+    sustainLevel,
+    attackTime,
+    releaseTime,
+    vibratoSpeed,
+    vibratoAmount,
+    oscillatorType
+    } : NoteInterface) => {
+        const audioContext : AudioContext = new AudioContext()
+        const oscillator : OscillatorNode = audioContext.createOscillator()
+        const masterVol : GainNode = audioContext.createGain()
+        const noteGain : GainNode = audioContext.createGain()
+        const lfo : OscillatorNode = audioContext.createOscillator()
+        const lfoGain : GainNode = audioContext.createGain()
+        const delay : DelayNode = audioContext.createDelay()
+        const delayFeedback : GainNode = audioContext.createGain()
+        const delayGain : GainNode = audioContext.createGain()
+
+        delayGain.connect(delay)
+        delay.connect(delayFeedback)
+        delayFeedback.connect(delay)
+        delay.connect(masterVol)
+        delay.delayTime.value = delayTime;
+        delayGain.gain.value = delayAmount;
+        delayFeedback.gain.value = feedback;
+  
+        masterVol.connect(audioContext.destination);
+        masterVol.gain.value = volume
+  
+        noteGain.gain.setValueAtTime(0, 0);
+        noteGain.gain.linearRampToValueAtTime(sustainLevel, audioContext.currentTime + attackTime);
+        noteGain.gain.setValueAtTime(sustainLevel, audioContext.currentTime + 1 - releaseTime);
+        noteGain.gain.linearRampToValueAtTime(0, audioContext.currentTime + 1);
+  
+        lfo.frequency.setValueAtTime(vibratoSpeed, 0);
+        lfo.connect(lfoGain);
+        lfo.start(0);
+        lfo.stop(audioContext.currentTime + 1);
+        
+        lfoGain.gain.setValueAtTime(vibratoAmount, 0)
+        lfoGain.connect(oscillator.frequency)
+  
+        oscillator.type = oscillatorType.current as OscillatorType
+        oscillator.frequency.setValueAtTime(220, 0);
+        oscillator.start(0);
+        oscillator.stop(audioContext.currentTime + 1);
+        oscillator.connect(noteGain);
+        noteGain.connect(masterVol)
+        noteGain.connect(delay)
 }
 
 export default function Home() {
-
   const [visibility, setVisibility] = useState(false)
   
-  const oscType = useRef("sine" as OscillatorType)
-  const [volumeNum, setVolumeNum] = useState(0.3)
+  const oscillatorType = useRef("sine" as OscillatorType)
+  const [volume, setVolume] = useState(0.3)
   const [sustainLevel,setSustainLevel] = useState(0.8)
   const [attackTime, setAttackTime] = useState(0.3)
   const [releaseTime, setReleaseTime] = useState(0.3)
   const [vibratoAmount, setVibratoAmount] = useState(0.3)
   const [vibratoSpeed, setVibratoSpeed] = useState(10) 
   const [delayTime, setDelayTime] = useState(0)
-  const [feedbackValue, setFeedbackValue] = useState(0)
+  const [feedback, setFeedback] = useState(0)
   const [delayAmount, setDelayAmount] = useState(0)
   
   return (
@@ -44,7 +93,18 @@ export default function Home() {
             <div className="w-full flex items-center justify-center">
               <button
               onClick={()=>{
-                // TODO : make playNote()
+                playNote({
+                  delayTime,
+                  delayAmount,
+                  feedback,
+                  volume,
+                  sustainLevel,
+                  attackTime,
+                  releaseTime,
+                  vibratoSpeed,
+                  vibratoAmount,
+                  oscillatorType
+                })
               }}
               className="w-fit text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-600 hover:rounded transition duration-300"
               >PLAY NOTE</button>
@@ -54,11 +114,11 @@ export default function Home() {
                 <div className="w-2/3 flex flex-col gap-2 items-center">
                   <div>
                     <label className="text-md text-gray-500 font-semibold">Volume </label>
-                    <span className="text-md text-blue-600 font-semibold">{volumeNum*100}%</span>
+                    <span className="text-md text-blue-600 font-semibold">{volume*100}%</span>
                   </div>
                   <input
                   onChange={(e) => {
-                    setVolumeNum((Number(e.target.value)))
+                    setVolume((Number(e.target.value)))
                   }}
                   className="w-full"
                   type="range" min="0" max="1" step="0.1" defaultValue={0.3}/>
@@ -143,11 +203,11 @@ export default function Home() {
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Delay Feedback </label>
-                      <span className="text-md text-blue-600 font-semibold">{Math.floor(feedbackValue*100)}</span>
+                      <span className="text-md text-blue-600 font-semibold">{Math.floor(feedback*100)}</span>
                     </div>
                     <input
                     onChange={(e) => {
-                      setFeedbackValue((Number(e.target.value)))
+                      setFeedback((Number(e.target.value)))
                     }}
                     className="w-full"
                     type="range" min="0" max=".9" step="0.05" defaultValue={0}/>
@@ -169,7 +229,7 @@ export default function Home() {
                 <ul className="grid grid-cols-4 w-full gap-6 flex-row justify-between items-center">
                     <li>
                         <input 
-                        onChange={(e)=> oscType.current = e.target.value as OscillatorType}
+                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
                         type="radio" id="sine-wave" name="wave" value="sine" className="hidden peer" defaultChecked/>
                         <label htmlFor="sine-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
                             <div className="flex flex-col gap-2">
@@ -180,7 +240,7 @@ export default function Home() {
                     </li>
                     <li>
                         <input 
-                        onChange={(e)=> oscType.current = e.target.value as OscillatorType}
+                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
                         type="radio" id="square-wave" name="wave" value="square" className="hidden peer"/>
                         <label htmlFor="square-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
                             <div className="flex flex-col gap-2">
@@ -191,7 +251,7 @@ export default function Home() {
                     </li>
                     <li>
                         <input 
-                        onChange={(e)=> oscType.current = e.target.value as OscillatorType}
+                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
                         type="radio" id="triangle-wave" name="wave" value="triangle" className="hidden peer"/>
                         <label htmlFor="triangle-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
                             <div className="flex flex-col gap-2">
@@ -202,7 +262,7 @@ export default function Home() {
                     </li>
                     <li>
                         <input 
-                        onChange={(e)=> oscType.current = e.target.value as OscillatorType}
+                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
                         type="radio" id="saw-wave" name="wave" value="sawtooth" className="hidden peer"/>
                         <label htmlFor="saw-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
                             <div className="flex flex-col gap-2">
@@ -238,3 +298,4 @@ export default function Home() {
     </>
   )
 }
+
