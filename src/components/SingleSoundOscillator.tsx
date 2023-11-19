@@ -1,12 +1,15 @@
 "use client"
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { Modal } from "./Modal";
 
 export default function SingleSoundOscillator() {
   
   const [visibility, setVisibility] = useState(true)
   
   var AudioContext = window.AudioContext || window.AudioContext;
+
+  // refactor => less state usage!!!
   
   const isPlaying = useRef(false)
   const oscType = useRef("sine" as OscillatorType)
@@ -18,10 +21,9 @@ export default function SingleSoundOscillator() {
   useEffect(()=>{
     if(audioContext && !oscillator){
       setOscillator(audioContext.createOscillator())
-    }else if(audioContext && oscillator && !masterVol){
       setMasterVol(audioContext.createGain())
-      oscillator.type = oscType.current
-    }else if(audioContext && oscillator && masterVol){
+    }else{
+        oscillator.type = oscType.current
         masterVol.connect(audioContext.destination);
         masterVol.gain.value = volumeNum
         if(isPlaying.current === false){
@@ -31,7 +33,7 @@ export default function SingleSoundOscillator() {
           oscillator.start(0);
       }
     }
-  },[audioContext,oscillator,masterVol])
+  },[audioContext,oscillator])
   
   
   const handleStart = () => {
@@ -138,8 +140,7 @@ export default function SingleSoundOscillator() {
             </div>
         </div>
         {visibility && 
-          <div className="bg-white h-fit w-[90%] md:w-1/3 rounded p-5 shadow-2xl flex flex-col border-slate-300 border-2 gap-2 text-gray-500 text-sm">
-            <h1 className="font-bold">Single Sound Oscillator</h1>
+          <Modal title="Single Sound Oscillator">
             <p>This module makes use of the Audio Web API to produce a singlie sound.</p>
             <p>How to recreate this?</p>
             <p> 
@@ -150,7 +151,7 @@ export default function SingleSoundOscillator() {
             </p>
             <p>By definition, we have created the simplest synthesizer!</p>
             <p>Learn more: <a className="text-cyan-700 underline" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Aduio API docs</a></p>
-          </div>
+          </Modal> 
         }
       </div>
     </>

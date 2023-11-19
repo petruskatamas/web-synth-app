@@ -1,6 +1,9 @@
 "use client"
-import Image from "next/image";
 import { MutableRefObject, useRef, useState } from "react";
+import { Modal } from "@/components/Modal";
+import { Button } from "@/components/Button";
+import { Slider } from "@/components/Slider";
+import { WaveformSelect } from "@/components/WaveformSelect";
 
 export const AudioContext = window.AudioContext || window.AudioContext;
 
@@ -85,15 +88,18 @@ export default function Home() {
   const [delayTime, setDelayTime] = useState(0)
   const [feedback, setFeedback] = useState(0)
   const [delayAmount, setDelayAmount] = useState(0)
+
+  const setOscType = (parameter : OscillatorType) => {
+    oscillatorType.current = parameter
+  }
   
   return (
     <>
       <div className=" flex flex-col min-h-screen h-fit w-full p-8 justify-start md:flex-row md:justify-center items-center gap-12">
         <div className="bg-white h-fit w-[90%] lg:w-2/4 rounded p-5 pb-8 shadow-2xl flex flex-col border-slate-300 border-2 gap-4 relative">
             <div className="w-full flex items-center justify-center">
-              <button
-              onClick={()=>{
-                playNote({
+              <Button 
+                onClick={() => playNote({
                   delayTime,
                   delayAmount,
                   feedback,
@@ -104,10 +110,11 @@ export default function Home() {
                   vibratoSpeed,
                   vibratoAmount,
                   oscillatorType
-                })
-              }}
-              className="w-fit text-white bg-lime-500 border border-gray-200  px-4 py-2 text-center font-bold text-xl rounded hover:bg-lime-600 hover:rounded transition duration-300"
-              >PLAY NOTE</button>
+                  })}
+                label={"PLAY NOTE"}
+                variant={"start"}
+                className={"w-fit"}
+              />
             </div>
             <div className="w-full flex flex-col gap-4 justify-center items-center">
               <div className="w-full flex flex-col gap-2 items-center">
@@ -116,12 +123,13 @@ export default function Home() {
                     <label className="text-md text-gray-500 font-semibold">Volume </label>
                     <span className="text-md text-blue-600 font-semibold">{volume*100}%</span>
                   </div>
-                  <input
-                  onChange={(e) => {
-                    setVolume((Number(e.target.value)))
-                  }}
-                  className="w-full"
-                  type="range" min="0" max="1" step="0.1" defaultValue={0.3}/>
+                  <Slider 
+                    min={0}
+                    max={1}
+                    step={0.1}
+                    defaultValue={0.3}
+                    fn={setVolume}
+                  />
                 </div>
                 <div className="w-full flex flex-row gap-2 items-center">
                   <div className="w-1/3 flex flex-col gap-2 items-center">
@@ -129,36 +137,39 @@ export default function Home() {
                       <label className="text-md text-gray-500 font-semibold">Attack </label>
                       <span className="text-md text-blue-600 font-semibold">{Math.floor(attackTime*200)}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setAttackTime((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max="0.5" step="0.05" defaultValue={0.3}/>
+                    <Slider 
+                      min={0}
+                      max={0.5}
+                      step={0.05}
+                      defaultValue={0.3}
+                      fn={setAttackTime}
+                    />
                   </div>
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Sustain </label>
                       <span className="text-md text-blue-600 font-semibold">{sustainLevel*100}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setSustainLevel((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max="1" step="0.1" defaultValue={0.8}/>
+                    <Slider 
+                      min={0}
+                      max={1}
+                      step={0.1}
+                      defaultValue={0.8}
+                      fn={setSustainLevel}
+                    />
                   </div>
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Release </label>
                       <span className="text-md text-blue-600 font-semibold">{Math.floor(releaseTime*200)}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setReleaseTime((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max="0.5" step="0.05" defaultValue={0.3}/>
+                    <Slider 
+                      min={0}
+                      max={0.5}
+                      step={0.05}
+                      defaultValue={0.3}
+                      fn={setReleaseTime}
+                    />
                   </div>
                 </div>
                 <div className="w-full flex flex-row gap-2 items-center justify-center">
@@ -167,24 +178,26 @@ export default function Home() {
                       <label className="text-md text-gray-500 font-semibold">Vibrato Amount </label>
                       <span className="text-md text-blue-600 font-semibold">{Math.floor(vibratoAmount*100)}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setVibratoAmount((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max="1" step="0.05" defaultValue={0.3}/>
+                    <Slider 
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      defaultValue={0.3}
+                      fn={setVibratoAmount}
+                    />
                   </div>
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Vibrato Speed </label>
                       <span className="text-md text-blue-600 font-semibold">{vibratoSpeed*2}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setVibratoSpeed((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="1" max="50" step="2.5" defaultValue={10}/>
+                    <Slider 
+                      min={1}
+                      max={50}
+                      step={2.5}
+                      defaultValue={10}
+                      fn={setVibratoSpeed}
+                    />
                   </div>
                 </div>
                 <div className="w-full flex flex-row gap-2 items-center">
@@ -193,106 +206,117 @@ export default function Home() {
                       <label className="text-md text-gray-500 font-semibold">Delay Time </label>
                       <span className="text-md text-blue-600 font-semibold ">{delayTime} s</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setDelayTime((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max="1" step="0.05" defaultValue={0}/>
+                    <Slider 
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      defaultValue={0}
+                      fn={setDelayTime}
+                    />
                   </div>
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Delay Feedback </label>
                       <span className="text-md text-blue-600 font-semibold">{Math.floor(feedback*100)}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setFeedback((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max=".9" step="0.05" defaultValue={0}/>
+                    <Slider 
+                      min={0}
+                      max={.9}
+                      step={0.05}
+                      defaultValue={0}
+                      fn={setFeedback}
+                    />
                   </div>
                   <div className="w-1/3 flex flex-col gap-2 items-center">
                     <div>
                       <label className="text-md text-gray-500 font-semibold">Delay Amount </label>
                       <span className="text-md text-blue-600 font-semibold">{Math.floor(delayAmount*100)}</span>
                     </div>
-                    <input
-                    onChange={(e) => {
-                      setDelayAmount((Number(e.target.value)))
-                    }}
-                    className="w-full"
-                    type="range" min="0" max=".9" step="0.05" defaultValue={0}/>
+                    <Slider 
+                      min={0}
+                      max={.9}
+                      step={0.05}
+                      defaultValue={0}
+                      fn={setDelayAmount}
+                    />
                   </div>
                 </div>
               </div>
                 <ul className="grid grid-cols-4 w-full gap-6 flex-row justify-between items-center">
                     <li>
-                        <input 
-                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
-                        type="radio" id="sine-wave" name="wave" value="sine" className="hidden peer" defaultChecked/>
-                        <label htmlFor="sine-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
-                            <div className="flex flex-col gap-2">
-                              <div className="w-full text-lg font-semibold text-center">Sine</div>
-                              <Image className="flex justify-center items-center mx-auto" priority src="/Simple_sine_wave.svg" alt="square-wave" width={60} height={50}/>
-                            </div>
-                        </label>
+                        <WaveformSelect 
+                          id={"sine-wave"}
+                          value={"sine"}
+                          label={"Sine"}
+                          fn={setOscType}
+                          img={"/Simple_sine_wave.svg"}
+                          checked={true}
+                        />
                     </li>
                     <li>
-                        <input 
-                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
-                        type="radio" id="square-wave" name="wave" value="square" className="hidden peer"/>
-                        <label htmlFor="square-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
-                            <div className="flex flex-col gap-2">
-                              <div className="w-full text-lg font-semibold text-center">Square</div>
-                              <Image className="flex justify-center items-center mx-auto" src="/Square_wave.svg" alt="square-wave" width={60} height={50}/>
-                            </div>
-                        </label>
+                        <WaveformSelect 
+                          id={"square-wave"}
+                          value={"square"}
+                          label={"Square"}
+                          fn={setOscType}
+                          img={"/Square_wave.svg"}
+                        />
                     </li>
                     <li>
-                        <input 
-                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
-                        type="radio" id="triangle-wave" name="wave" value="triangle" className="hidden peer"/>
-                        <label htmlFor="triangle-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
-                            <div className="flex flex-col gap-2">
-                              <div className="w-full text-lg font-semibold text-center">Triangle</div>
-                              <Image className="flex justify-center items-center mx-auto" src="/Triangle_wave.svg" alt="triangle-wave" width={60} height={50}/>
-                            </div>
-                        </label>
+                        <WaveformSelect 
+                          id={"triangle-wave"}
+                          value={"triangle"}
+                          label={"Triangle"}
+                          fn={setOscType}
+                          img={"/Triangle_wave.svg"}
+                        />
                     </li>
                     <li>
-                        <input 
-                        onChange={(e)=> oscillatorType.current = e.target.value as OscillatorType}
-                        type="radio" id="saw-wave" name="wave" value="sawtooth" className="hidden peer"/>
-                        <label htmlFor="saw-wave" className="flex items-center justify-center w-full p-4 text-gray-500 bg-white border border-gray-200 rounded-lg cursor-pointer dark:hover:text-gray-300  peer-checked:border-blue-600 peer-checked:text-blue-600 hover:text-gray-600 hover:bg-gray-100 transition duration-300">                           
-                            <div className="flex flex-col gap-2">
-                              <div className="w-full text-lg font-semibold text-center">Sawtooth</div>
-                              <Image className="flex justify-center items-center mx-auto" src="/Sawtooth_wave.svg" alt="sawtooth-wave" width={60} height={50}/>
-                            </div>
-                        </label>
+                        <WaveformSelect 
+                          id={"saw-wave"}
+                          value={"sawtooth"}
+                          label={"Sawtooth"}
+                          fn={setOscType}
+                          img={"/Sawtooth_wave.svg"}
+                        />
                     </li>
                 </ul>
-              <button 
-              onClick={()=>setVisibility(!visibility)}
-              className="absolute bg-white border-slate-300 border-2 rounded p-2 shadow-2xl -bottom-6 text-sm font-semibold text-gray-500 hover:text-gray-600 hover:bg-gray-200 transition duration-300">
-                {visibility ? "Hide description" : "Show description"}
-              </button>
+                <Button 
+                  onClick={()=>setVisibility(!visibility)}
+                  variant="default"
+                  label={visibility ? "Hide description" : "Show description"}
+                />
             </div>
         </div>
-        {visibility && 
-          <div className="bg-white h-fit w-[90%] md:w-1/3 rounded p-5 shadow-2xl flex flex-col border-slate-300 border-2 gap-2 text-gray-500 text-sm">
-            <h1 className="font-bold">Single Sound Oscillator</h1>
-            <p>This module makes use of the Audio Web API to produce a singlie sound.</p>
-            <p>How to recreate this?</p>
+        {visibility &&
+          <Modal title="Adding Effects to an Oscillator">
             <p> 
-              We initalize an <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">AudioContext</code> as our audio source in the browser.
-              We create an <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">oscilator</code> from our context
-              with a <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">type</code> property 
-              and connect it to the <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">masterVolume</code> - created from the same context.
+              Before, we were producing a single sound continously with the <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">Web Audio API</code> and
+              a simple <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">oscillator</code> with a 
+              given <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">waveform</code> .
             </p>
-            <p>By definition, we have created the simplest synthesizer!</p>
-            <p>Learn more: <a className="text-cyan-700 underline" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API">Web Aduio API docs</a></p>
-          </div>
+            <p>
+              Now, we are adding some effects with some extra layers of <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">AudioContexts</code>, for 
+              example an ADSR (Attack,Decay,Sustain,Release) module to manipulate the notes that are played individually.
+              We are using a <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">GainNode</code> to change the volume of the note over time.
+              To tap into the clock of said note we are using the <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">context.currentTime</code> method
+              where context is our <code className="bg-slate-300 text-black py-[3px] px-[5px] rounded-lg text-sm">AudioContext</code> which from the oscillator was created and currently producing a sound.
+            </p>
+            <p>
+              Controlling the clock of a given oscilator or any audio source is the basis of modularity.
+            </p>
+            <p>
+              Learn more about modularity here: <a className="text-cyan-700 underline" href="https://en.wikipedia.org/wiki/Modular_synthesizer#Typical_modules">Modularity</a>
+            </p>
+            <p>
+              At this point we have created a synth with effects that can play a single note.
+              Our next step is either to create a piano to play more notes freely, or to create a sequencer to play a given order of 
+              notes at a given speed...
+            </p>
+            <p>
+              How about we create both?!
+            </p>
+          </Modal> 
         }
       </div>
     </>
