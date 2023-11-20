@@ -5,7 +5,7 @@ import { Button } from "@/components/Button";
 import { Slider } from "@/components/Slider";
 import { WaveformSelect } from "@/components/WaveformSelect";
 
-export const AudioContext = window.AudioContext || window.AudioContext;
+const AudioContext = window.AudioContext || window.AudioContext;
 
 export interface NoteInterface {
     delayTime : number,
