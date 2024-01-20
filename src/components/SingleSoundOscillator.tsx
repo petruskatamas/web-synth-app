@@ -10,41 +10,41 @@ export default function SingleSoundOscillator() {
   
   const [visibility, setVisibility] = useState(false)
 
-  const audioContext : MutableRefObject<AudioContext> = useRef(null as unknown as AudioContext)
+  const audioContext : MutableRefObject<AudioContext | null> = useRef(null)
   const isPlaying : MutableRefObject<boolean> = useRef(false)
   const oscType : MutableRefObject<OscillatorType>  = useRef("sine" as OscillatorType)
-  const oscillator : MutableRefObject<OscillatorNode> = useRef(null as unknown as OscillatorNode)
-  const masterVol : MutableRefObject<GainNode> = useRef(null as unknown as GainNode) 
+  const oscillator : MutableRefObject<OscillatorNode | null> = useRef(null)
+  const masterVol : MutableRefObject<GainNode | null> = useRef(null) 
   const [volumeNum,setVolumeNum] = useState(0.3)
   
   const handleStart = () => {
     if(isPlaying.current === false){
       isPlaying.current = true;
       (audioContext as MutableRefObject<AudioContext>).current = new AudioContext();
-      (oscillator as MutableRefObject<OscillatorNode>).current = audioContext.current.createOscillator();
-      (masterVol as MutableRefObject<GainNode>).current = audioContext.current.createGain();
-      (oscillator.current as unknown as OscillatorNode).type = oscType.current;
-      (masterVol.current as unknown as GainNode).connect(audioContext.current.destination);
-      (masterVol.current as unknown as GainNode).gain.value = volumeNum;
-      (oscillator.current as unknown as OscillatorNode).frequency.setValueAtTime(220, 0);
-      (oscillator.current as unknown as OscillatorNode).connect(masterVol.current);
-      (oscillator.current as unknown as OscillatorNode).start(0);
+      (oscillator as MutableRefObject<OscillatorNode | undefined>).current = audioContext.current?.createOscillator();
+      (masterVol as MutableRefObject<GainNode | undefined>).current = audioContext.current?.createGain();
+      (oscillator.current as OscillatorNode).type = oscType.current;
+      (masterVol.current as GainNode).connect(audioContext.current?.destination as AudioDestinationNode);
+      (masterVol.current as GainNode).gain.value = volumeNum;
+      (oscillator.current as OscillatorNode).frequency.setValueAtTime(220, 0);
+      (oscillator.current as OscillatorNode).connect(masterVol.current as GainNode);
+      (oscillator.current as OscillatorNode).start(0);
     }
   }
   
   const handleStop = () => {
     if(isPlaying.current === true){
       isPlaying.current = false;
-      (oscillator.current as unknown as OscillatorNode).stop(0);
-      (masterVol as MutableRefObject<GainNode>).current = null as unknown as GainNode;
-      (oscillator as MutableRefObject<OscillatorNode>).current = null as unknown as OscillatorNode;
-      (audioContext as MutableRefObject<AudioContext>).current = null as unknown as AudioContext;
+      (oscillator.current as OscillatorNode).stop(0);
+      (masterVol as MutableRefObject<GainNode | null>).current = null;
+      (oscillator as MutableRefObject<OscillatorNode | null>).current = null;
+      (audioContext as MutableRefObject<AudioContext | null>).current = null;
     }
   }
 
   const setOscType = (type : OscillatorType) => {
     oscType.current = type
-    oscillator.current ? (oscillator.current as unknown as OscillatorNode).type = oscType.current : null 
+    oscillator.current ? (oscillator.current as OscillatorNode).type = oscType.current : null 
   }
   
   return (
@@ -74,7 +74,7 @@ export default function SingleSoundOscillator() {
                 <input
                 onChange={(e) => {
                   setVolumeNum((Number(e.target.value)))
-                  masterVol.current ? (masterVol.current as unknown as GainNode).gain.value = Number(e.target.value) : null
+                  masterVol.current ? (masterVol.current as GainNode).gain.value = Number(e.target.value) : null
                 }}
                 className="w-full"
                 type="range" min="0" max="1" step="0.1" defaultValue={0.3}/>
