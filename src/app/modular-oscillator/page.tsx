@@ -1,8 +1,6 @@
-import ModularOscillator from '@/components/ModularOscillator'
-import React from 'react'
+import ModularOscillator from '@/components/ModularOscillator';
+import React from 'react';
 
 export default function MOPage() {
-  return (
-    <ModularOscillator />
-  )
+  return <ModularOscillator />;
 }

@@ -1,15 +1,15 @@
-import React, { ReactNode } from 'react'
+import React, { ReactNode } from 'react';
 
 interface ModalInterface {
-    children : ReactNode
-    title : string
+  children: ReactNode;
+  title: string;
 }
 
-export const Modal = ({children,title} : ModalInterface) => {
+export const Modal = ({ children, title }: ModalInterface) => {
   return (
-    <div className="bg-white h-fit w-[90%] md:w-1/3 rounded p-5 shadow-2xl flex flex-col border-slate-300 border-2 gap-2 text-gray-500 text-sm leading-loose">
-        <h1 className="font-bold">{title}</h1>
-        {children}
+    <div className='flex h-fit w-[90%] flex-col gap-2 rounded border-2 border-slate-300 bg-white p-5 text-sm leading-loose text-gray-500 shadow-2xl md:w-1/3'>
+      <h1 className='font-bold'>{title}</h1>
+      {children}
     </div>
-  )
-}
+  );
+};
